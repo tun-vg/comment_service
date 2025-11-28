@@ -1,7 +1,7 @@
 using comment_service.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace comment_service.Commands;
+namespace comment_service.Application.Commands;
 
 public class DeleteCommentCommandHandler : ICommandHandler<DeleteCommentCommand, bool>
 {

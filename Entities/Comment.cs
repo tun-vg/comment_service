@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace comment_service.Entities;
 
@@ -15,5 +16,16 @@ public class Comment
 
     public Guid PostId { get; set; }
 
-    public Guid UserId { get; set; }
+    public Guid AuthorId { get; set; }
+
+    public int LikedCount { get; set; }
+
+    public ICollection<CommentReaction> CommentReactions { get; set; } = new List<CommentReaction>();
+
+    [NotMapped]
+    public ICollection<Comment> CommentReplies { get; set; } = new List<Comment>();
+
+    public Guid? UpperCommentId { get; set; }
+
+    public int CommentReplyCount { get; set; }
 }

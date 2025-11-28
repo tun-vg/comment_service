@@ -1,6 +1,6 @@
-using comment_service.Commands;
+using comment_service.Application.Commands;
+using comment_service.Application.Queries;
 using comment_service.Dispatcher;
-using comment_service.Queries;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,9 +20,10 @@ public class CommentController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCommentByPostId(Guid postId)
+    [Route("/post/{postId}/comments")]
+    public async Task<IActionResult> GetCommentByPostId(Guid postId, [FromQuery] bool hot)
     {
-        GetCommentsByPostIdQuery query = new GetCommentsByPostIdQuery(postId);
+        GetCommentsByPostIdQuery query = new GetCommentsByPostIdQuery(postId, hot);
         var result = await _queryDispatcher.Send(query);
         return Ok(result);
     }
@@ -31,21 +32,31 @@ public class CommentController : ControllerBase
     public async Task<IActionResult> CreateComment(CreateCommentCommand command)
     {
         var result = await _commandDispatcher.Send(command);
-        return Created(string.Empty, result);
+     
+        return Ok(result);
     }
 
-    [HttpPut]
-    public async Task<IActionResult> UpdateComment(UpdateCommentCommand command)
+    [HttpPost("/like-comment")]
+    public async Task<IActionResult> LikeComment(LikeCommentCommand command)
+    {
+        var result = await _commandDispatcher.Send(command);
+
+        return Ok(result);
+    }
+
+    [HttpGet("/comment-replies/{commentId}")]
+    public async Task<IActionResult> GetCommentRepliesByCommentId(Guid commentId)
+    {
+        GetCommentRepliesByCommentId query = new GetCommentRepliesByCommentId(commentId);
+        var result = await _queryDispatcher.Send(query);
+        return Ok(result);
+    }
+
+    [HttpPost("/unlike-comment")]
+    public async Task<IActionResult> UnlikeComment(UnLikeCommentCommand command)
     {
         var result = await _commandDispatcher.Send(command);
         return Ok(result);
     }
 
-    [HttpDelete("{commentId}")]
-    public async Task<IActionResult> DeleteComment(Guid commentId)
-    {
-        DeleteCommentCommand command = new DeleteCommentCommand(commentId);
-        var result = await _commandDispatcher.Send(command);
-        return Ok(result);
-    }
 }

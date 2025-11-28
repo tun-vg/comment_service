@@ -9,4 +9,6 @@ public class ApplicationDBContext : DbContext
     {
     }
     public DbSet<Comment> Comments { get; set; }
+
+    public DbSet<CommentReaction> CommentReactions { get; set; }
 }

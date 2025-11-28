@@ -1,7 +1,7 @@
 using comment_service.Common.Interfaces;
 using comment_service.Entities;
 
-namespace comment_service.Commands;
+namespace comment_service.Application.Commands;
 
 public class UpdateCommentCommand : ICommand<Comment>
 {
