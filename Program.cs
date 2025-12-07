@@ -1,8 +1,11 @@
 using comment_service;
+using comment_service.Behaviors;
 using comment_service.Common.Interfaces;
 using comment_service.Dispatcher;
+using comment_service.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,14 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 
 builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 builder.Services.AddScoped<IQueryDispatcher, QueryDispatcher>();
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = builder.Configuration.GetValue<string>("Redis:Configuration");
+    return ConnectionMultiplexer.Connect(configuration);
+});
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddScoped<ICacheVersionManagement, RedisCacheVersionManager>();
+builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
 
 var assembly = typeof(Program).Assembly;
 

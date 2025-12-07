@@ -4,16 +4,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace comment_service.Application.Queries;
 
-public class GetCommentRepliesByCommentIdHandler : IQueryHandler<GetCommentRepliesByCommentId, IEnumerable<Comment>>
+public class GetCommentRepliesByCommentIdQueryHandler : IQueryHandler<GetCommentRepliesByCommentIdQuery, IEnumerable<Comment>>
 {
     private readonly ApplicationDBContext _context;
     
-    public GetCommentRepliesByCommentIdHandler(ApplicationDBContext context)
+    public GetCommentRepliesByCommentIdQueryHandler(ApplicationDBContext context)
     {
         _context = context;
     }
 
-    public async Task<IEnumerable<Comment>> Handle(GetCommentRepliesByCommentId query, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Comment>> Handle(GetCommentRepliesByCommentIdQuery query, CancellationToken cancellationToken)
     {
         var commentReplies = _context.Comments.Where(c => c.UpperCommentId == query.CommentId).OrderByDescending(c => c.CreatedAt).ToListAsync();
         return await commentReplies;

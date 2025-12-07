@@ -6,10 +6,12 @@ namespace comment_service.Application.Commands;
 public class UpdateCommentCommandHandler : ICommandHandler<UpdateCommentCommand, Comment>
 {
     private readonly ApplicationDBContext _context;
+    private readonly ICacheVersionManagement _cacheVersionManagement;
 
-    public UpdateCommentCommandHandler(ApplicationDBContext context)
+    public UpdateCommentCommandHandler(ApplicationDBContext context, ICacheVersionManagement cacheVersionManagement)
     {
         _context = context;
+        _cacheVersionManagement = cacheVersionManagement;
     }
 
     public async Task<Comment> Handle(UpdateCommentCommand command, CancellationToken cancellationToken)
@@ -21,6 +23,15 @@ public class UpdateCommentCommandHandler : ICommandHandler<UpdateCommentCommand,
             comment.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
+
+            if (comment.UpperCommentId == null)
+            {
+                await _cacheVersionManagement.BumpCacheVersionAsync($"GetCommentsByPostId:Post={comment.PostId}");
+            } else
+            {
+                await _cacheVersionManagement.BumpCacheVersionAsync($"GetCommentRepliesByCommentId:Comment={comment.UpperCommentId}");
+            }
+
             return comment;
         }
         else

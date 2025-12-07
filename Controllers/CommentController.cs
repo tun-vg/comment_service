@@ -47,7 +47,7 @@ public class CommentController : ControllerBase
     [HttpGet("/comment-replies/{commentId}")]
     public async Task<IActionResult> GetCommentRepliesByCommentId(Guid commentId)
     {
-        GetCommentRepliesByCommentId query = new GetCommentRepliesByCommentId(commentId);
+        GetCommentRepliesByCommentIdQuery query = new GetCommentRepliesByCommentIdQuery(commentId);
         var result = await _queryDispatcher.Send(query);
         return Ok(result);
     }
