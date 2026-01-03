@@ -2,6 +2,7 @@ using comment_service;
 using comment_service.Behaviors;
 using comment_service.Common.Interfaces;
 using comment_service.Dispatcher;
+using comment_service.Messaging.RabbitMQ;
 using comment_service.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,19 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddScoped<ICacheVersionManagement, RedisCacheVersionManager>();
 builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
+builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
+builder.Services.AddSingleton<RabbitMqConfig>(sp =>
+{
+    var config = new RabbitMqConfig
+    {
+        HostName = builder.Configuration.GetValue<string>("RabbitMQ:HostName"),
+        UserName = builder.Configuration.GetValue<string>("RabbitMQ:UserName"),
+        Password = builder.Configuration.GetValue<string>("RabbitMQ:Password"),
+        Port = builder.Configuration.GetValue<int>("RabbitMQ:Port"),
+        ExchangeName = builder.Configuration.GetValue<string>("RabbitMQ:ExchangeName")
+    };
+    return config;
+});
 
 var assembly = typeof(Program).Assembly;
 

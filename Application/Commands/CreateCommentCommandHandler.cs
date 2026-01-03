@@ -1,5 +1,9 @@
 using comment_service.Common.Interfaces;
 using comment_service.Entities;
+using comment_service.IntegrationEvents;
+using comment_service.Messaging.RabbitMQ;
+using System.Text;
+using System.Text.Json;
 
 namespace comment_service.Application.Commands;
 
@@ -7,11 +11,13 @@ public class CreateCommentCommandHandler : ICommandHandler<CreateCommentCommand,
 {
     private readonly ApplicationDBContext _context;
     private readonly ICacheVersionManagement _cacheVersionManagement;
-    
-    public CreateCommentCommandHandler(ApplicationDBContext context, ICacheVersionManagement cacheVersionManagement)
+    private readonly IRabbitMqProducer _rabbitMqProducer;
+
+    public CreateCommentCommandHandler(ApplicationDBContext context, ICacheVersionManagement cacheVersionManagement, IRabbitMqProducer rabbitMqProducer)
     {
         _context = context;
         _cacheVersionManagement = cacheVersionManagement;
+        _rabbitMqProducer = rabbitMqProducer;
     }
 
     public async Task<Comment> Handle(CreateCommentCommand command, CancellationToken cancellationToken)
@@ -46,6 +52,17 @@ public class CreateCommentCommandHandler : ICommandHandler<CreateCommentCommand,
         {
             await _cacheVersionManagement.BumpCacheVersionAsync($"GetCommentRepliesByCommentId:Comment={command.UpperCommentId}");
         }
+
+        CommentCreatedEvent commentCreatedEvent = new CommentCreatedEvent
+        {
+            CommentId = comment.CommentId,
+            PostId = comment.PostId,
+            UserId = Guid.Empty,
+            AuthorId = comment.AuthorId,
+            CreatedAt = comment.CreatedAt
+        };
+
+        await _rabbitMqProducer.PublishAsync("created_comment", JsonSerializer.SerializeToUtf8Bytes(commentCreatedEvent));
 
         return comment;
     }
